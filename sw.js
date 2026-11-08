@@ -1,5 +1,5 @@
 /* Offline support for Citizenship Civics. */
-const CACHE = 'civics-93fb0be26f';
+const CACHE = 'civics-ce346ea273';
 const ASSETS = ["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png","./icons/favicon-32.png","./fonts/libre-caslon-text-latin-400-normal.woff2","./fonts/libre-caslon-text-latin-400-italic.woff2","./fonts/libre-caslon-text-latin-700-normal.woff2","./fonts/libre-caslon-display-latin-400-normal.woff2"];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

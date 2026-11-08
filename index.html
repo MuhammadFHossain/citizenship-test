@@ -613,21 +613,25 @@ textarea.input{min-height:140px;font-family:ui-monospace,Menlo,monospace;font-si
           <label for="my-state">State or territory</label>
           <select id="my-state" class="input"><option value="">Choose one</option></select>
           <span class="hint" id="cap-hint">The capital (question 62) fills in from this.</span>
+          <span class="hint" id="auto-note" hidden></span>
         </div>
       </div>
       <div class="item"><div class="field">
         <label for="my-senator">One of your U.S. senators</label>
         <input id="my-senator" class="input" autocomplete="off" placeholder="Name">
+        <span class="hint" id="sen-auto" hidden></span>
         <a class="hint" href="https://www.senate.gov/senators/senators-contact.htm" target="_blank" rel="noopener">Look up on senate.gov</a>
       </div></div>
       <div class="item"><div class="field">
         <label for="my-rep">Your U.S. representative</label>
         <input id="my-rep" class="input" autocomplete="off" placeholder="Name">
+        <span class="hint" id="rep-auto" hidden></span>
         <a class="hint" href="https://www.house.gov/representatives/find-your-representative" target="_blank" rel="noopener">Look up on house.gov by ZIP code</a>
       </div></div>
       <div class="item"><div class="field">
         <label for="my-governor">Your governor</label>
         <input id="my-governor" class="input" autocomplete="off" placeholder="Name">
+        <span class="hint" id="gov-auto" hidden></span>
         <a class="hint" href="https://www.usa.gov/state-governor" target="_blank" rel="noopener">Look up on usa.gov</a>
       </div></div>
     </div>
@@ -813,7 +817,7 @@ window.APP_MODE='pwa';
       note: "Residents of territories with nonvoting Delegates or Resident Commissioners may give that person’s name. Also acceptable: the territory has no (voting) representatives in Congress." },
     { n: 30, s: "G2", star: 1, office: 1, q: "What is the name of the Speaker of the House of Representatives now?",
       a: ["Mike Johnson"], mc: "Mike Johnson", d: ["JD Vance", "John Roberts", "Nancy Pelosi"],
-      note: "The House picks its Speaker when a new Congress starts (next: January 2027). Check the USCIS test updates page before your interview." },
+      note: "The new Congress chooses its Speaker when it meets on January 3, 2027. If your interview is after that, check the USCIS test updates page." },
     { n: 31, s: "G2", q: "Who does a U.S. senator represent?",
       a: ["Citizens of their state", "People of their state"], mc: "All people of their state",
       d: ["Only the people of one city", "The President", "Only people in their political party"] },
@@ -1152,7 +1156,28 @@ window.APP_MODE='pwa';
     ["Northern Mariana Islands", "Saipan"], ["American Samoa", "Pago Pago"]
   ];
 
-  var data = { SECTIONS: SECTIONS, QUESTIONS: Q, STATES: STATES };
+  /* Officeholders as of November 8, 2026, five days after the 2026 general election.
+     People elected on November 3 take office in January 2027; `next` switches the answer
+     automatically on the day the new officeholder is sworn in. */
+  var OFFICIALS_AS_OF = "2026-11-08";
+  var SOON = "Winners of the November 3, 2026 election take office in January 2027. If your interview is after that, check these names again.";
+  var OFFICIALS = {
+    "California": { senators: ["Alex Padilla", "Adam Schiff"], governor: "Gavin Newsom",
+      next: { from: "2027-01-04", governor: "Xavier Becerra" },
+      govNote: "Governor-elect Xavier Becerra takes office on January 4, 2027. From that day, the answer is Xavier Becerra.",
+      repNote: "California has 52 congressional districts. Find yours by ZIP code." },
+    "Texas": { senators: ["John Cornyn", "Ted Cruz"], governor: "Greg Abbott", soon: true },
+    "Florida": { senators: ["Rick Scott", "Ashley Moody"], governor: "Ron DeSantis", soon: true },
+    "New York": { senators: ["Chuck Schumer", "Kirsten Gillibrand"], governor: "Kathy Hochul", soon: true },
+    "New Jersey": { senators: ["Cory Booker", "Andy Kim"], governor: "Mikie Sherrill" },
+    "Illinois": { senators: ["Dick Durbin", "Tammy Duckworth"], governor: "JB Pritzker", soon: true },
+    "Washington": { senators: ["Patty Murray", "Maria Cantwell"], governor: "Bob Ferguson" },
+    "Massachusetts": { senators: ["Elizabeth Warren", "Ed Markey"], governor: "Maura Healey", soon: true },
+    "Georgia": { senators: ["Jon Ossoff", "Raphael Warnock"], governor: "Brian Kemp", soon: true },
+    "Virginia": { senators: ["Mark Warner", "Tim Kaine"], governor: "Abigail Spanberger", soon: true }
+  };
+
+  var data = { SECTIONS: SECTIONS, QUESTIONS: Q, STATES: STATES, OFFICIALS: OFFICIALS, OFFICIALS_AS_OF: OFFICIALS_AS_OF, SOON: SOON };
   if (typeof module !== "undefined" && module.exports) module.exports = data;
   else window.CIVICS = data;
 })();
@@ -1165,6 +1190,23 @@ var MODE = window.APP_MODE || 'artifact';
 var C = window.CIVICS, QUESTIONS = C.QUESTIONS, SECTIONS = C.SECTIONS, STATES = C.STATES;
 var QN = {}; QUESTIONS.forEach(function(q){ QN[q.n] = q; });
 var CAP = {}; STATES.forEach(function(s){ CAP[s[0]] = s[1]; });
+var OFFICIALS = C.OFFICIALS || {}, OFF_AS_OF = C.OFFICIALS_AS_OF || '', OFF_SOON = C.SOON || '', DEFAULT_STATE = 'California';
+/* Today's senators and governor for a state; switches to an elected successor on the day they take office. */
+function officials(state){
+  var o = OFFICIALS[state]; if (!o) return null;
+  var gov = o.governor, switched = false;
+  if (o.next && dayNum() >= dateInputToDay(o.next.from)){ gov = o.next.governor; switched = true; }
+  return { senators:o.senators, governor:gov, govNote: switched ? '' : (o.govNote || ''), repNote:o.repNote || '', soon:!!o.soon };
+}
+/* First visit: start with California filled in. */
+function withDefaultState(d){
+  var o = OFFICIALS[DEFAULT_STATE];
+  if (o && !d.my.state && !d.my.chosen && !d.my.senator && !d.my.governor){
+    d.my.state = DEFAULT_STATE; d.my.senator = o.senators[0]; d.my.governor = officials(DEFAULT_STATE).governor;
+    d.my.autoSen = DEFAULT_STATE; d.my.autoGov = DEFAULT_STATE;
+  }
+  return d;
+}
 var INT = [0,1,3,7,14,30];
 var MASTER = 4, NPD_MIN = 3, NPD_MAX = 20, SEC_PER_Q = 25;
 var LS_KEY = 'civics2025.progress.v1', LS_APPEAR = 'civics.appearance', LS_BANNER = 'civics.installBannerHidden';
@@ -1251,7 +1293,7 @@ function ringSVG(size, ringR, starR, filled){
 function defaultState(){
   return { v:1, updatedAt:0, cards:{}, days:{}, newDays:{},
     settings:{ newPerDay:8, style:'mix', senior:false, voice:false, haptics:true, interview:'', appearance:'system' },
-    my:{ state:'', senator:'', rep:'', governor:'' }, mocks:[] };
+    my:{ state:'', senator:'', rep:'', governor:'', autoSen:'', autoGov:'', chosen:'' }, mocks:[] };
 }
 function normalize(o){
   var d = defaultState();
@@ -1265,9 +1307,9 @@ function normalize(o){
   for (var k in d.settings) if (o.settings && o.settings[k] !== undefined) d.settings[k] = o.settings[k];
   for (var m in d.my) if (o.my && typeof o.my[m] === 'string') d.my[m] = o.my[m];
   d.settings.newPerDay = clamp(+d.settings.newPerDay || 8, NPD_MIN, NPD_MAX);
-  return d;
+  return withDefaultState(d);
 }
-var S = (function(){ var raw = lsGet(LS_KEY); if (raw) try { return normalize(JSON.parse(raw)); } catch(e){} return defaultState(); })();
+var S = (function(){ var raw = lsGet(LS_KEY); if (raw) try { return normalize(JSON.parse(raw)); } catch(e){} return withDefaultState(defaultState()); })();
 function localSave(){ lsSet(LS_KEY, JSON.stringify(S)); }
 
 var sync = { ref:null, saving:false, again:false, timer:null, retried:false, asked:false };
@@ -1361,12 +1403,40 @@ if (mqDark){ var onScheme = function(){ if (appearance() === 'system') applyAppe
 function card(n){ return S.cards[n] || { b:0, due:0, seen:0, miss:0 }; }
 function isNew(n){ return !S.cards[n]; }
 function pool(){ return S.settings.senior ? QUESTIONS.filter(function(q){ return q.star; }) : QUESTIONS; }
+/* Senators and governor filled in from the state, until the person types their own. */
+function autoOn(k){ return !!(S.my.state && S.my[k] === S.my.state && officials(S.my.state)); }
+function autofill(state){
+  var o = officials(state);
+  if (o){ S.my.senator = o.senators[0]; S.my.governor = o.governor; S.my.autoSen = state; S.my.autoGov = state; }
+  else { if (S.my.autoSen) S.my.senator = ''; if (S.my.autoGov) S.my.governor = ''; S.my.autoSen = ''; S.my.autoGov = ''; }
+}
 function myAnswer(q){
   if (!q.dyn) return null;
   if (q.dyn === 'capital') return S.my.state ? CAP[S.my.state] : '';
+  if (q.dyn === 'senator' && autoOn('autoSen')) return officials(S.my.state).senators.join(' or ');
+  if (q.dyn === 'governor' && autoOn('autoGov')) return officials(S.my.state).governor;
   return S.my[q.dyn] || '';
 }
-function answerList(q){ if (!q.dyn) return q.a; var m = myAnswer(q); return m ? [m] : []; }
+function answerList(q){
+  if (!q.dyn) return q.a;
+  if (q.dyn === 'senator' && autoOn('autoSen')) return officials(S.my.state).senators.slice();
+  var m = myAnswer(q); return m ? [m] : [];
+}
+function localNote(q){
+  var o = S.my.state ? officials(S.my.state) : null; if (!o) return '';
+  if (q.dyn === 'governor' && autoOn('autoGov')) return o.govNote || (o.soon ? OFF_SOON : '');
+  if (q.dyn === 'senator' && autoOn('autoSen')) return 'Either name is correct.' + (o.soon ? ' ' + OFF_SOON : '');
+  if (q.dyn === 'rep') return o.repNote;
+  return '';
+}
+function missingLocal(){
+  var miss = [];
+  if (!S.my.state) miss.push('state');
+  if (!myAnswer(QN[23])) miss.push('senator');
+  if (!S.my.rep) miss.push('representative');
+  if (!myAnswer(QN[61])) miss.push('governor');
+  return miss;
+}
 function streak(){ var d = today(); if (!S.days[d]) d--; var n = 0; while (S.days[d]){ n++; d--; } return n; }
 function dueCards(){
   var t = today();
@@ -1376,7 +1446,6 @@ function dueCards(){
 function newLeftToday(){ return Math.max(0, S.settings.newPerDay - (S.newDays[today()] || 0)); }
 function unseen(){ return pool().filter(function(q){ return isNew(q.n); }); }
 function masteredCount(){ return pool().filter(function(q){ return card(q.n).b >= MASTER; }).length; }
-function localFilled(){ return (S.my.state ? 1 : 0) + ['senator','rep','governor'].filter(function(k){ return S.my[k]; }).length; }
 
 function grade(n, g, relearn){
   var t = today(), existed = !!S.cards[n], c = clone(card(n));
@@ -1526,9 +1595,10 @@ function renderBanners(){
   if (MODE === 'pwa' && !standalone() && !lsGet(LS_BANNER)){
     h += '<div class="banner"><div><b>Install the app</b><span class="small muted">Open it from your home screen, full screen and offline.</span></div><a class="btn sm" href="#setup">How</a><button class="icon-btn" type="button" data-act="hide-banner" aria-label="Dismiss">' + ICON.close + '</button></div>';
   }
-  var f = localFilled();
-  if (f < 4){
-    h += '<div class="banner"><div><b>Add your local answers</b><span class="small muted">' + (4 - f) + ' of 4 questions need your state, senator, representative, or governor.</span></div><a class="btn sm" href="#setup" data-act="go-answers">Add</a></div>';
+  var miss = missingLocal();
+  if (miss.length){
+    var list = miss.length === 1 ? miss[0] : miss.slice(0, -1).join(', ') + (miss.length > 2 ? ',' : '') + ' and ' + miss[miss.length - 1];
+    h += '<div class="banner"><div><b>Add your local answers</b><span class="small muted">Still needed: your ' + esc(list) + '.' + (S.my.autoSen ? ' Senators and governor are filled in for ' + esc(S.my.state) + '.' : '') + '</span></div><a class="btn sm" href="#setup" data-act="go-answers">Add</a></div>';
   }
   var box = $('#today-banners'); box.innerHTML = h; box.hidden = !h;
 }
@@ -1695,6 +1765,7 @@ function answersHTML(q, showAll, animate){
   } else h += dynForm(q);
   if (q.tip) h += '<p class="tip"><b>Tip.</b> ' + esc(q.tip) + '</p>';
   if (q.note) h += '<p class="note">' + esc(q.note) + '</p>';
+  var ln = localNote(q); if (ln) h += '<p class="note">' + esc(ln) + '</p>';
   return h + '</div>';
 }
 function dynForm(q){
@@ -1807,7 +1878,8 @@ $('#dock').addEventListener('click', function(e){ if (current === 'today' && ses
 function saveDyn(q, after){
   var inp = $('#dyn-input'); if (!inp) return;
   var v = inp.value.trim(); if (!v){ inp.focus(); return; }
-  if (q.dyn === 'capital') S.my.state = v; else S.my[q.dyn] = v;
+  if (q.dyn === 'capital'){ S.my.state = v; S.my.chosen = 'yes'; autofill(v); }
+  else { S.my[q.dyn] = v; if (q.dyn === 'senator') S.my.autoSen = ''; if (q.dyn === 'governor') S.my.autoGov = ''; }
   save(); syncForms(); after();
 }
 
@@ -1934,6 +2006,7 @@ function qItemHTML(q){
   else h += '<p class="note">Add your answer in Settings, under Your local answers.</p>';
   if (q.tip) h += '<p class="tip"><b>Tip.</b> ' + esc(q.tip) + '</p>';
   if (q.note) h += '<p class="note">' + esc(q.note) + '</p>';
+  var ln = localNote(q); if (ln) h += '<p class="note">' + esc(ln) + '</p>';
   h += '<div class="meta">' + pipHTML(q.n);
   if (q.need > 1) h += '<span class="badge">Name ' + q.need + '</span>';
   if (q.star) h += '<span class="badge star">65/20</span>';
@@ -2029,7 +2102,17 @@ function stateOptions(sel){ return '<option value="">Choose one</option>' + STAT
 function syncForms(){
   $('#my-state').innerHTML = stateOptions(S.my.state);
   $('#cap-hint').textContent = S.my.state ? 'Capital: ' + CAP[S.my.state] : 'The capital (question 62) fills in from this.';
-  ['senator','rep','governor'].forEach(function(k){ var el = $('#my-' + k); if (document.activeElement !== el) el.value = S.my[k] || ''; });
+  var o = S.my.state ? officials(S.my.state) : null, sAuto = autoOn('autoSen'), gAuto = autoOn('autoGov');
+  var shown = { senator: sAuto ? o.senators[0] : S.my.senator, rep: S.my.rep, governor: gAuto ? o.governor : S.my.governor };
+  ['senator','rep','governor'].forEach(function(k){ var el = $('#my-' + k); if (document.activeElement !== el) el.value = shown[k] || ''; });
+  var asOf = OFF_AS_OF ? fmtDay(dateInputToDay(OFF_AS_OF), {month:'long', day:'numeric', year:'numeric'}) : '';
+  var note = $('#auto-note');
+  if (o && (sAuto || gAuto)){ note.textContent = 'Senators and governor filled in for ' + S.my.state + ', current as of ' + asOf + '. You can change them.'; note.hidden = false; }
+  else if (S.my.state && !o){ note.textContent = 'Type your senators and governor below.'; note.hidden = false; }
+  else note.hidden = true;
+  var sa = $('#sen-auto'); sa.hidden = !sAuto; if (sAuto) sa.textContent = 'Either is correct: ' + o.senators.join(' or ') + '.' + (o.soon ? ' ' + OFF_SOON : '');
+  var ga = $('#gov-auto'), gText = gAuto ? (o.govNote || (o.soon ? OFF_SOON : '')) : ''; ga.hidden = !gText; ga.textContent = gText;
+  var ra = $('#rep-auto'), rText = o ? o.repNote : ''; ra.hidden = !rText; ra.textContent = rText;
   $$('input[name="style"]').forEach(function(r){ r.checked = r.value === S.settings.style; });
   $('#set-voice').checked = !!S.settings.voice;
   $('#set-haptics').checked = !!S.settings.haptics;
@@ -2042,8 +2125,13 @@ function renderSetup(){
   $('#sync-hint').textContent = MODE === 'pwa' ? 'Your progress is stored on this phone. Back up to keep a copy or move it to another device.' : (sync.ref ? 'Your progress follows your Claude account on any device.' : '');
   if (MODE === 'pwa') renderInstall();
 }
-$('#my-state').addEventListener('change', function(){ S.my.state = this.value; save(); syncForms(); });
-['senator','rep','governor'].forEach(function(k){ $('#my-' + k).addEventListener('input', function(){ S.my[k] = this.value.trim(); save(); }); });
+$('#my-state').addEventListener('change', function(){ S.my.state = this.value; S.my.chosen = 'yes'; autofill(S.my.state); save(); syncForms(); });
+['senator','rep','governor'].forEach(function(k){ $('#my-' + k).addEventListener('input', function(){
+  S.my[k] = this.value.trim();
+  if (k === 'senator') S.my.autoSen = '';
+  if (k === 'governor') S.my.autoGov = '';
+  save(); syncForms();
+}); });
 $$('input[name="style"]').forEach(function(r){ r.addEventListener('change', function(){ S.settings.style = this.value; save(); }); });
 $('#set-voice').addEventListener('change', function(){ S.settings.voice = this.checked; save(); if (this.checked) speak('Questions will be read aloud.'); });
 $('#set-haptics').addEventListener('change', function(){ S.settings.haptics = this.checked; save(); buzz(15); });
