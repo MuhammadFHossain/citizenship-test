@@ -1,5 +1,5 @@
 /* Offline support for Citizenship Civics. */
-const CACHE = 'civics-14afd7b113';
+const CACHE = 'civics-1d69b5214d';
 const ASSETS = ["./","./index.html","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png","./icons/favicon-32.png","./fonts/libre-caslon-text-latin-400-normal.woff2","./fonts/libre-caslon-text-latin-400-italic.woff2","./fonts/libre-caslon-text-latin-700-normal.woff2","./fonts/libre-caslon-display-latin-400-normal.woff2"];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -7,9 +7,20 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
+async function ranged(req) {
+  const hit = await caches.match(req.url, { ignoreSearch: true });
+  if (!hit) return fetch(req);
+  const buf = await hit.arrayBuffer(), size = buf.byteLength;
+  const m = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
+  const start = m && m[1] ? +m[1] : 0, end = m && m[2] ? Math.min(+m[2], size - 1) : size - 1;
+  return new Response(buf.slice(start, end + 1), { status: 206, headers: {
+    'Content-Type': hit.headers.get('Content-Type') || 'audio/mpeg', 'Content-Length': String(end - start + 1),
+    'Content-Range': 'bytes ' + start + '-' + end + '/' + size, 'Accept-Ranges': 'bytes' } });
+}
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  if (req.headers.get('range')) { e.respondWith(ranged(req)); return; }
   if (req.mode === 'navigate') {
     // Network first so updates arrive, with the cached copy when offline or slow.
     e.respondWith(new Promise((resolve) => {
