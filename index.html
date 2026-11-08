@@ -202,6 +202,11 @@ details.fold .fold-in{padding-bottom:16px}
 .verdict.good{color:var(--good)}
 .verdict.bad{color:var(--bad)}
 .answers{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.ans-head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:36px}
+.icon-btn.small{width:38px;height:38px}
+.icon-btn.small .ico{width:18px;height:18px}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+body.speaking [data-act="speak"] .ico,body.speaking [data-act="speak-answer"] .ico,body.speaking #rd-say .ico{animation:pulse .9s ease-in-out infinite;color:var(--rubric)}
 .answers ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:4px}
 .answers li::marker{color:var(--rubric)}
 .answers li:first-child{font-weight:700}
@@ -650,7 +655,16 @@ textarea.input{min-height:140px;font-family:ui-monospace,Menlo,monospace;font-si
         </div>
         <span class="hint">Mixed starts each new question as multiple choice, then asks you to answer from memory once you know it. Recommended.</span>
       </div>
-      <label class="item item-row" for="set-voice" id="voice-row"><div><b>Read questions aloud</b><span class="hint">Hear each question the way the officer will ask it.</span></div><span class="switch"><input type="checkbox" id="set-voice"><span></span></span></label>
+      <div class="item" id="voicekind-row">
+        <span class="lab" style="font-weight:700" id="lab-voicekind">Voice</span>
+        <div class="seg" role="radiogroup" aria-labelledby="lab-voicekind">
+          <label><input type="radio" name="voicekind" value="recorded"> Recorded</label>
+          <label><input type="radio" name="voicekind" value="device"> Phone voice</label>
+          <button class="btn sm" type="button" id="voice-test" style="border-radius:0;border:0;border-left:1px solid var(--line-2);min-height:44px">Play</button>
+        </div>
+        <span class="hint">Recorded is a calm American male voice made with Kokoro, a free open-source voice model. It works offline. Names you type yourself use the phone voice.</span>
+      </div>
+      <label class="item item-row" for="set-voice" id="voice-row"><div><b>Read aloud automatically</b><span class="hint">Each question is read as it appears, and the answer after you answer.</span></div><span class="switch"><input type="checkbox" id="set-voice"><span></span></span></label>
       <label class="item item-row" for="set-haptics" id="haptics-row"><div><b>Vibrate on answers</b><span class="hint">A short buzz for correct and incorrect.</span></div><span class="switch"><input type="checkbox" id="set-haptics"><span></span></span></label>
       <label class="item item-row" for="set-senior"><div><b>65/20 rule</b><span class="hint">Age 65 or older with a green card for 20 years or more. Study only the 20 starred questions; the officer asks 10 and you need 6 correct.</span></div><span class="switch"><input type="checkbox" id="set-senior"><span></span></span></label>
     </div>
@@ -1182,6 +1196,8 @@ window.APP_MODE='pwa';
   else window.CIVICS = data;
 })();
 
+window.VOICE_INDEX = {"voice": "am_michael", "clips": {"5dddcaee": [0, 20448, 3.35], "689c8b01": [20448, 7344, 1.16], "7ef5f06b": [27792, 15120, 2.45], "dc9f19ff": [42912, 9504, 1.52], "107cd2c5": [52416, 19584, 3.22], "e89325c4": [72000, 12816, 2.07], "7b50d713": [84816, 38736, 6.39], "c993b97c": [123552, 12528, 2.04], "3b98689f": [136080, 22896, 3.76], "4398a0c5": [158976, 7632, 1.2], "10fb1dfc": [166608, 13824, 2.25], "9f4d9674": [180432, 20160, 3.31], "310a9d3c": [200592, 23904, 3.93], "8af294c6": [224496, 7920, 1.27], "eae7c980": [232416, 24048, 3.95], "f2adf45c": [256464, 18720, 3.06], "5d433709": [275184, 28368, 4.66], "6ecd10a5": [303552, 15264, 2.49], "c5b37bc7": [318816, 42048, 6.95], "8e45444b": [360864, 11376, 1.85], "ba221133": [372240, 35424, 5.83], "cd4609aa": [407664, 22176, 3.63], "0a9d2a77": [429840, 16704, 2.73], "8fe68402": [446544, 11088, 1.8], "ae947fc0": [457632, 11952, 1.93], "7d48f4c4": [469584, 29088, 4.79], "14b48b31": [498672, 14688, 2.4], "6d284730": [513360, 18720, 3.06], "47cdd205": [532080, 17856, 2.93], "728d6cdf": [549936, 16560, 2.7], "6823c9e0": [566496, 18576, 3.03], "d5ec021b": [585072, 31536, 5.2], "c9358016": [616608, 10368, 1.66], "ab960f98": [626976, 18864, 3.08], "6aa2abe3": [645840, 6624, 1.05], "a4a5a3d9": [652464, 19584, 3.2], "1aed63bb": [672048, 18144, 2.96], "2e24921b": [690192, 18432, 3.01], "5f41df9c": [708624, 7200, 1.13], "2dae0f3e": [715824, 16128, 2.62], "6733d49c": [731952, 7776, 1.23], "ca6f8a9f": [739728, 18000, 2.95], "cad2a557": [757728, 7776, 1.25], "76ebafa4": [765504, 20736, 3.39], "b4b59896": [786240, 25488, 4.18], "1d286f1f": [811728, 11808, 1.9], "22be464a": [823536, 27360, 4.5], "1f327c6b": [850896, 6912, 1.09], "7d4fcf48": [857808, 34128, 5.62], "0aac2b72": [891936, 17136, 2.8], "7bf483f3": [909072, 15408, 2.5], "370cabd5": [924480, 5760, 0.89], "44e287e2": [930240, 15984, 2.6], "5a8a1efe": [946224, 17136, 2.81], "8d7579ec": [963360, 16848, 2.74], "4502cbee": [980208, 28080, 4.63], "94701a28": [1008288, 8784, 1.4], "a68e477a": [1017072, 18000, 2.93], "996b9129": [1035072, 10800, 1.75], "d986ec71": [1045872, 13536, 2.19], "742b2461": [1059408, 10800, 1.75], "91132863": [1070208, 24768, 4.06], "bf85e63a": [1094976, 14688, 2.39], "7d642c50": [1109664, 20736, 3.39], "1d7bcbdd": [1130400, 16272, 2.66], "6a695ea4": [1146672, 25488, 4.18], "de966307": [1172160, 13968, 2.27], "a2c3170a": [1186128, 27792, 4.56], "0833ea31": [1213920, 7776, 1.23], "359493ae": [1221696, 28800, 4.74], "584f2b54": [1250496, 14832, 2.42], "baf9900b": [1265328, 24336, 4.0], "9210cc8b": [1289664, 11232, 1.81], "f2cbf6d4": [1300896, 26784, 4.4], "f6a2345e": [1327680, 8928, 1.44], "ab7459ff": [1336608, 24480, 4.03], "be7eb081": [1361088, 9648, 1.55], "52ab762f": [1370736, 14688, 2.4], "bca23f57": [1385424, 9360, 1.49], "708d7caf": [1394784, 23472, 3.85], "99df1254": [1418256, 8064, 1.3], "46fbb9df": [1426320, 15120, 2.46], "7172a410": [1441440, 10080, 1.62], "15fd47f7": [1451520, 12672, 2.06], "4cfc2c78": [1464192, 22320, 3.67], "e9866a7c": [1486512, 7776, 1.24], "052ba09f": [1494288, 14976, 2.44], "aa9a3f5d": [1509264, 11520, 1.86], "0fb0f235": [1520784, 16272, 2.66], "05242680": [1537056, 17424, 2.83], "bbbab71d": [1554480, 17280, 2.82], "5c45df41": [1571760, 15264, 2.47], "b1ba4016": [1587024, 17280, 2.82], "6b867a54": [1604304, 9648, 1.55], "88b76c4c": [1613952, 14112, 2.29], "3d60c1af": [1628064, 19872, 3.25], "501b2489": [1647936, 17856, 2.93], "b0213303": [1665792, 16416, 2.67], "3c0cb3b4": [1682208, 5904, 0.94], "6f8be19f": [1688112, 31392, 5.18], "300ca0d0": [1719504, 6048, 0.94], "73e6a14c": [1725552, 18144, 2.96], "6ec00862": [1743696, 7056, 1.11], "85aad1f6": [1750752, 21744, 3.56], "ea55db3b": [1772496, 14688, 2.38], "1bce9c24": [1787184, 23328, 3.83], "e8420789": [1810512, 8640, 1.39], "13e948c4": [1819152, 23184, 3.8], "7f4d6f0e": [1842336, 8928, 1.43], "0999fc46": [1851264, 19152, 3.13], "0d3e7c9a": [1870416, 11376, 1.84], "6ab69045": [1881792, 15984, 2.62], "320c9705": [1897776, 32400, 5.34], "e4a4fe3e": [1930176, 16272, 2.64], "af327378": [1946448, 13968, 2.26], "cb931255": [1960416, 41328, 6.83], "99ce4c98": [2001744, 15984, 2.6], "b99d8e16": [2017728, 43776, 7.24], "93c8f9d0": [2061504, 10656, 1.72], "926b5303": [2072160, 23760, 3.9], "94fef587": [2095920, 25056, 4.11], "e1cbfc74": [2120976, 27216, 4.48], "39e7ceff": [2148192, 13536, 2.2], "c6b4a554": [2161728, 29664, 4.88], "4f421851": [2191392, 19296, 3.15], "33588076": [2210688, 21600, 3.53], "9c04f396": [2232288, 18864, 3.09], "dcd9c90c": [2251152, 26928, 4.43], "06a7d2a9": [2278080, 14688, 2.39], "9698508b": [2292768, 19296, 3.15], "d0bb91fb": [2312064, 10656, 1.71], "5f9f064e": [2322720, 19440, 3.18], "9a6c1b7a": [2342160, 11952, 1.94], "6a12fa7a": [2354112, 55440, 9.19], "d6678235": [2409552, 26928, 4.42], "bf828f82": [2436480, 9936, 1.59], "662d3d2c": [2446416, 22320, 3.66], "f462aa5e": [2468736, 17568, 2.88], "4020dda0": [2486304, 20160, 3.29], "2162506c": [2506464, 10224, 1.64], "a4d7910d": [2516688, 26064, 4.28], "99ef205d": [2542752, 11088, 1.79], "f0e3ac53": [2553840, 31392, 5.18], "a10afd78": [2585232, 15552, 2.53], "22e88109": [2600784, 17856, 2.91], "e9cc7bab": [2618640, 9072, 1.46], "ed2b7a9a": [2627712, 21888, 3.6], "60a63142": [2649600, 24192, 3.96], "0248399b": [2673792, 27216, 4.46], "e1bd4e52": [2701008, 10944, 1.76], "24ffaea2": [2711952, 22176, 3.64], "d16d75e2": [2734128, 22320, 3.65], "6943b17d": [2756448, 31968, 5.27], "493b3ef3": [2788416, 42624, 7.04], "e41f3c2b": [2831040, 10944, 1.77], "dbc1239e": [2841984, 16992, 2.77], "12430dd2": [2858976, 18432, 3.02], "40626d13": [2877408, 26208, 4.31], "5c0f6d23": [2903616, 17856, 2.91], "5d3de275": [2921472, 25776, 4.23], "a0e31d76": [2947248, 15696, 2.57], "0bb14b92": [2962944, 25056, 4.12], "aa611d03": [2988000, 16272, 2.66], "b16117c3": [3004272, 24624, 4.04], "6d93c9dc": [3028896, 13104, 2.13], "e24c2d12": [3042000, 26496, 4.36], "0f934d24": [3068496, 13392, 2.16], "2d28da27": [3081888, 37296, 6.15], "03d3990d": [3119184, 12528, 2.03], "0c720eec": [3131712, 33696, 5.54], "95b67039": [3165408, 8496, 1.35], "f48a7cee": [3173904, 24048, 3.96], "adb856c7": [3197952, 23184, 3.8], "f1a756c3": [3221136, 11520, 1.87], "3d5ee623": [3232656, 24336, 4.0], "b0b6c6cc": [3256992, 22032, 3.6], "c96cb2f0": [3279024, 18720, 3.07], "f5f7db6c": [3297744, 16416, 2.68], "55e8fb38": [3314160, 17712, 2.89], "2bf1bc5c": [3331872, 64080, 10.63], "60940eba": [3395952, 11088, 1.8], "de5a27c6": [3407040, 16128, 2.62], "917507cb": [3423168, 32832, 5.41], "d07bab93": [3456000, 33696, 5.55], "fba046d2": [3489696, 12528, 2.04], "cfec0327": [3502224, 27360, 4.49], "98d1ad9d": [3529584, 10944, 1.77], "8d5c2da4": [3540528, 19872, 3.25], "bc301a18": [3560400, 17424, 2.85], "0f378874": [3577824, 16560, 2.69], "5aa0d95a": [3594384, 21312, 3.5], "b8994135": [3615696, 12528, 2.02], "58e03f66": [3628224, 22176, 3.63], "6d77da87": [3650400, 14544, 2.36], "b135556f": [3664944, 24624, 4.03], "fec402cb": [3689568, 27936, 4.59], "b635af3f": [3717504, 10512, 1.69], "a2ef74e3": [3728016, 22032, 3.62], "7b51ab06": [3750048, 12816, 2.07], "c4f90de4": [3762864, 25776, 4.24], "6ee0c25c": [3788640, 15840, 2.59], "402d496f": [3804480, 23760, 3.89], "acae37af": [3828240, 15408, 2.52], "4a15cc35": [3843648, 30816, 5.07], "c9644d1d": [3874464, 8064, 1.28], "a1ba6296": [3882528, 19728, 3.22], "6a50c669": [3902256, 14544, 2.37], "30ba36fc": [3916800, 21024, 3.45], "af77fa80": [3937824, 14976, 2.43], "a73777d7": [3952800, 17712, 2.89], "2cfc5604": [3970512, 29088, 4.8], "8a940b99": [3999600, 10656, 1.72], "9aaf8cd8": [4010256, 21744, 3.57], "69ab27c9": [4032000, 16848, 2.76], "a2c28fb2": [4048848, 39888, 6.59], "2739149b": [4088736, 15408, 2.5], "c91bf3dd": [4104144, 43056, 7.11], "5551a4bb": [4147200, 11664, 1.89], "db255560": [4158864, 25488, 4.2], "2fc63f5d": [4184352, 7344, 1.15], "bf6fe145": [4191696, 21024, 3.46], "6f5a7f22": [4212720, 7920, 1.26], "378467b8": [4220640, 16992, 2.78], "43bb580c": [4237632, 10512, 1.7], "dcb9ff06": [4248144, 12816, 2.09], "f3bea129": [4260960, 15408, 2.5], "9d12d94e": [4276368, 16128, 2.62], "79c76845": [4292496, 18576, 3.04], "b462462c": [4311072, 15984, 2.59], "eb02c1f6": [4327056, 11088, 1.8], "a94fe3b3": [4338144, 16128, 2.63], "0edfcf09": [4354272, 11664, 1.89], "a0804c69": [4365936, 29808, 4.91], "769afe61": [4395744, 8928, 1.42], "265edaf0": [4404672, 13392, 2.18], "54ba810b": [4418064, 26208, 4.3], "d0744087": [4444272, 18864, 3.09], "4feea422": [4463136, 18432, 3.02], "018396f4": [4481568, 11520, 1.85], "9174dff6": [4493088, 19872, 3.26], "fd2bda9e": [4512960, 10800, 1.75], "94f9fe43": [4523760, 16992, 2.77], "db36d3cf": [4540752, 13968, 2.26], "c2b73045": [4554720, 8928, 1.43], "1b684934": [4563648, 9216, 1.48], "bf2710cf": [4572864, 14400, 2.33], "6f443e10": [4587264, 7488, 1.18], "5abc0396": [4594752, 12672, 2.06], "64f7eee1": [4607424, 10080, 1.62], "91904c5d": [4617504, 14832, 2.41], "07f6e40b": [4632336, 8064, 1.29], "a2e2bb80": [4640400, 12384, 2.01], "9c291b4f": [4652784, 8208, 1.3], "bab446fe": [4660992, 13968, 2.26], "b2be3d14": [4674960, 9648, 1.55], "ed6aea00": [4684608, 13968, 2.28], "e1818ee3": [4698576, 8784, 1.41], "be8733d3": [4707360, 14544, 2.37], "a466e03d": [4721904, 7920, 1.27], "fa442237": [4729824, 17280, 2.82], "056fbd44": [4747104, 8352, 1.33], "019e3594": [4755456, 12240, 1.99], "fed90379": [4767696, 10368, 1.66], "9cf8cab2": [4778064, 8352, 1.33], "c96fd1db": [4786416, 6192, 0.97], "e2215c8c": [4792608, 6336, 1.0], "b99eabba": [4798944, 7632, 1.21], "481188b4": [4806576, 8640, 1.39], "fb948fc1": [4815216, 6192, 0.97], "593d0ee5": [4821408, 7200, 1.13], "ff703211": [4828608, 6192, 0.97], "64c7e24e": [4834800, 7632, 1.22], "cb1bd3b4": [4842432, 7632, 1.22], "29641a8f": [4850064, 7920, 1.26], "6da65a55": [4857984, 6624, 1.03], "4f4544b0": [4864608, 7776, 1.23], "2378192c": [4872384, 8784, 1.41], "23204d8a": [4881168, 6624, 1.04], "07deb743": [4887792, 7920, 1.26], "91a8ebb6": [4895712, 7488, 1.2], "ebd020ab": [4903200, 8496, 1.37], "bd59ae47": [4911696, 7200, 1.13], "70872b06": [4918896, 7200, 1.14], "dc36a144": [4926096, 6912, 1.09], "d2cb73a7": [4933008, 6768, 1.08], "55574ba0": [4939776, 7200, 1.14], "846a4486": [4946976, 6912, 1.09], "52266d64": [4953888, 9072, 1.46], "41bb2484": [4962960, 6912, 1.09], "5dc62d74": [4969872, 6624, 1.05], "a46eb63a": [4976496, 7920, 1.25], "1ce25593": [4984416, 6768, 1.06], "3f44b309": [4991184, 6768, 1.07], "2408cf2b": [4997952, 8208, 1.3], "2f20e5d8": [5006160, 6768, 1.07], "9df06945": [5012928, 6336, 1.0], "7ec83579": [5019264, 7344, 1.16], "fb5f3e03": [5026608, 6912, 1.08], "1f3aaaee": [5033520, 9504, 1.53], "34d1fac9": [5043024, 6480, 1.02], "615295c8": [5049504, 7632, 1.22], "ae5ab66c": [5057136, 7488, 1.18], "25416b0d": [5064624, 6912, 1.1], "0c71f4f0": [5071536, 5472, 0.86], "588ea9e5": [5077008, 6912, 1.08], "e998723b": [5083920, 6624, 1.04], "03fa27c7": [5090544, 8640, 1.38], "40b1f5e4": [5099184, 7488, 1.18], "128ed369": [5106672, 7200, 1.14], "61bb9f1e": [5113872, 6912, 1.1], "22ea1850": [5120784, 7488, 1.18], "37fa9378": [5128272, 6768, 1.07], "4e76134e": [5135040, 6768, 1.08], "3ea5494d": [5141808, 23904, 3.93], "9acf3579": [5165712, 7632, 1.21], "45e547b8": [5173344, 7632, 1.2], "f044a364": [5180976, 8784, 1.4], "63373da7": [5189760, 6912, 1.09], "5d4faa81": [5196672, 8064, 1.28], "3ca1af17": [5204736, 7776, 1.24], "396f80cc": [5212512, 12096, 1.94], "d16e520a": [5224608, 14544, 2.35], "54447120": [5239152, 9792, 1.58], "d03457fa": [5248944, 11952, 1.93], "b18ca3cd": [5260896, 13680, 2.23], "c484e008": [5274576, 12096, 1.95], "0ec8cd50": [5286672, 8208, 1.3], "ef5ae5c9": [5294880, 16848, 2.75], "b53b1c6b": [5311728, 10800, 1.75], "0505d6a9": [5322528, 15120, 2.45], "b9201877": [5337648, 10224, 1.65], "f9a8b322": [5347872, 10080, 1.62], "1364cf28": [5357952, 13392, 2.17], "3d9053f0": [5371344, 11520, 1.85], "4e696fe9": [5382864, 18720, 3.05], "e7575d4b": [5401584, 15840, 2.58], "b797cbc2": [5417424, 15984, 2.6], "c01cae9f": [5433408, 16560, 2.69], "93fc0472": [5449968, 13968, 2.27], "6028bcd9": [5463936, 12096, 1.95], "fbf2adb0": [5476032, 13824, 2.25], "ad0bebe0": [5489856, 15120, 2.46], "839c1d03": [5504976, 13248, 2.16], "b247c7e3": [5518224, 12096, 1.97], "0abeafd5": [5530320, 13536, 2.19], "19d4e5c4": [5543856, 15264, 2.49], "eb98d6de": [5559120, 15696, 2.54], "24edf9b8": [5574816, 11232, 1.81], "2c48ce90": [5586048, 13536, 2.21], "785d7225": [5599584, 15552, 2.54], "bd899efd": [5615136, 10368, 1.66], "54814134": [5625504, 17136, 2.8], "db34eecc": [5642640, 12960, 2.1], "5d2e42f7": [5655600, 18000, 2.94], "dc000092": [5673600, 18720, 3.06], "4bbb644b": [5692320, 16704, 2.72], "4b7e0ccd": [5709024, 12960, 2.1], "48f99f17": [5721984, 16128, 2.63], "ef0c896f": [5738112, 13536, 2.2], "13de4706": [5751648, 19008, 3.11], "e075d9d8": [5770656, 12960, 2.1]}};
+
 </script>
 <script>
 (function(){
@@ -1292,7 +1308,7 @@ function ringSVG(size, ringR, starR, filled){
 /* ---------- state ---------- */
 function defaultState(){
   return { v:1, updatedAt:0, cards:{}, days:{}, newDays:{},
-    settings:{ newPerDay:8, style:'mix', senior:false, voice:false, haptics:true, interview:'', appearance:'system' },
+    settings:{ newPerDay:8, style:'mix', senior:false, voice:false, voiceKind:'recorded', haptics:true, interview:'', appearance:'system' },
     my:{ state:'', senator:'', rep:'', governor:'', autoSen:'', autoGov:'', chosen:'' }, mocks:[] };
 }
 function normalize(o){
@@ -1484,21 +1500,90 @@ function forecast(N){
   return { allSeen:allSeen, mastered:mastered, peak:peak };
 }
 
-/* ---------- speech ---------- */
-var canSpeak = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+/* ---------- speech ----------
+   Recorded voice: every question, answer and drill sentence was recorded ahead of time with
+   Kokoro (open-weight, Apache-2.0, voice "Michael") and packed into voice.mp3. Each clip is
+   found by a short hash of its text. Anything without a recording (a name you type yourself)
+   falls back to the phone's own voice. */
+var VOICE = window.VOICE_INDEX || null;
+var hasTTS = typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined';
+var AC = window.AudioContext || window.webkitAudioContext;
+var canClip = !!(VOICE && VOICE.clips && AC && window.fetch);
+var canSpeak = hasTTS || canClip;
+var actx = null, packLoad = null, clipCache = {}, playing = null, playTok = 0;
+function normText(t){ return String(t).replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim(); }
+function textId(t){
+  var s = unescape(encodeURIComponent(normText(t))), h = 0x811c9dc5;
+  for (var i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return ('0000000' + h.toString(16)).slice(-8);
+}
+function audioCtx(){
+  if (!actx && AC){ actx = new AC(); try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e){} }
+  return actx;
+}
+/* Phones only allow sound after a tap; wake the audio engine on any touch. */
+document.addEventListener('pointerdown', function(){ if (!canClip) return; var c = audioCtx(); if (c && c.state === 'suspended') c.resume(); }, true);
+function loadPack(){
+  if (!packLoad){
+    packLoad = fetch('voice.mp3').then(function(r){ if (!r.ok) throw new Error('voice'); return r.arrayBuffer(); });
+    packLoad.catch(function(){ packLoad = null; });
+  }
+  return packLoad;
+}
+function clipBuffer(id){
+  if (clipCache[id]) return Promise.resolve(clipCache[id]);
+  var c = VOICE.clips[id];
+  return loadPack().then(function(b){
+    var part = b.slice(c[0], c[0] + c[1]), ctx = audioCtx();
+    return new Promise(function(res, rej){ var p = ctx.decodeAudioData(part, res, rej); if (p && p.then) p.then(res, rej); });
+  }).then(function(buf){ clipCache[id] = buf; return buf; });
+}
+function setSpeaking(on){ document.body.classList.toggle('speaking', !!on); }
+function hush(){
+  playTok++;
+  if (playing){ try { playing.stop(); } catch(e){} playing = null; }
+  if (hasTTS) try { speechSynthesis.cancel(); } catch(e){}
+  setSpeaking(false);
+}
 function pickVoice(){
   try {
     var vs = speechSynthesis.getVoices() || [];
-    return vs.find(function(v){ return v.lang === 'en-US' && /Samantha|Aria|Jenny|Allison|Google US|Ava/i.test(v.name); })
+    return vs.find(function(v){ return /^en[-_]US/i.test(v.lang) && /Aaron|Alex|Fred|Nathan|Daniel|Tom|Guy|Davis|Male/i.test(v.name); })
       || vs.find(function(v){ return /^en[-_]US/i.test(v.lang); }) || null;
   } catch(e){ return null; }
 }
-function speak(text){
-  if (!canSpeak) return;
-  try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.9; var v = pickVoice(); if (v) u.voice = v; speechSynthesis.speak(u); } catch(e){}
+function deviceSpeak(text){
+  if (!hasTTS) return;
+  try {
+    var u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.9;
+    var v = pickVoice(); if (v) u.voice = v;
+    u.onend = u.onerror = function(){ setSpeaking(false); };
+    setSpeaking(true); speechSynthesis.speak(u);
+  } catch(e){ setSpeaking(false); }
 }
-function hush(){ if (canSpeak) try { speechSynthesis.cancel(); } catch(e){} }
-function speakText(q){ return q.q.replace(/“|”/g, '"'); }
+function speak(text){
+  if (!canSpeak || !text) return;
+  hush();
+  var id = textId(text), tok = playTok;
+  if (S.settings.voiceKind !== 'device' && canClip && VOICE.clips[id]){
+    setSpeaking(true);
+    clipBuffer(id).then(function(buf){
+      if (tok !== playTok) return;
+      var ctx = audioCtx(); if (ctx.state === 'suspended') ctx.resume();
+      var src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination);
+      src.onended = function(){ if (playing === src){ playing = null; setSpeaking(false); } };
+      playing = src; src.start(0);
+    }).catch(function(){ if (tok === playTok){ setSpeaking(false); deviceSpeak(text); } });
+    return;
+  }
+  deviceSpeak(text);
+}
+function speakText(q){ return q.q; }
+window.civicsHasRecording = function(t){ return !!(canClip && VOICE.clips[textId(t)]); };
+/* What gets read aloud as the answer: the short form of the accepted answer, or your local answer. */
+function answerSpeech(q){ return q.dyn ? myAnswer(q) : q.mc; }
+/* Installed app: fetch the recordings in the background so the voice also works offline. */
+function warmVoice(){ if (canClip && MODE === 'pwa' && navigator.onLine !== false) setTimeout(function(){ loadPack().catch(function(){}); }, 4000); }
 
 /* ---------- files ---------- */
 function saveFile(name, text, type){
@@ -1757,7 +1842,8 @@ function answersHTML(q, showAll, animate){
   else if (q.need > 1) head = 'Give any ' + q.need;
   else if (q.a.length > 1) head = 'Give any one';
   else head = 'Answer';
-  var h = '<div class="answers' + (animate ? ' reveal' : '') + '"><p class="caps muted">' + head + '</p>';
+  var say = canSpeak && answerSpeech(q) ? '<button class="icon-btn outline small" type="button" data-act="speak-answer" aria-label="Hear the answer">' + ICON.speaker + '</button>' : '';
+  var h = '<div class="answers' + (animate ? ' reveal' : '') + '"><div class="ans-head"><p class="caps muted">' + head + '</p>' + say + '</div>';
   if (list.length){
     var cut = !showAll && list.length > 6 ? 5 : list.length;
     h += '<ul>' + list.slice(0, cut).map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
@@ -1846,6 +1932,7 @@ function pickOption(i){
   cur.picked = i;
   var ok = cur.opts[i].ok;
   cur.anim = 'pick';
+  if (S.settings.voice) setTimeout(function(){ speak(answerSpeech(QN[cur.n])); }, 250);
   buzz(ok ? 12 : [30, 50, 30]);
   if (session.first[cur.n] === undefined) session.first[cur.n] = ok ? 2 : 0;
   grade(cur.n, ok ? 2 : 0, !!session.missed[cur.n] && ok);
@@ -1867,10 +1954,11 @@ function sessionClick(e){
   var a = t.dataset.act;
   if (a === 'exit' || a === 'home'){ session = null; hush(); renderToday(); window.scrollTo(0, 0); }
   else if (a === 'more'){ session = null; startSession(5); }
-  else if (a === 'reveal'){ session.cur.revealed = true; session.cur.anim = 'reveal'; renderSession(); }
+  else if (a === 'reveal'){ session.cur.revealed = true; session.cur.anim = 'reveal'; renderSession(); if (S.settings.voice) speak(answerSpeech(QN[session.cur.n])); }
   else if (a === 'next') nextCard();
   else if (a === 'all'){ session.cur.showAll = true; renderSession(); }
   else if (a === 'speak') speak(speakText(QN[session.cur.n]));
+  else if (a === 'speak-answer') speak(answerSpeech(QN[session.cur.n]));
   else if (a === 'dyn-save') saveDyn(QN[session.cur.n], renderSession);
 }
 $('#today-session').addEventListener('click', sessionClick);
@@ -1930,7 +2018,7 @@ function renderMock(){
     h += '<p class="lede">The officer asks up to ' + R.total + ' questions aloud. You pass with ' + R.pass + ' correct. The test ends at ' + R.pass + ' correct or ' + R.fail + ' incorrect.</p></div>';
     h += '<div class="panel">';
     if (canSpeak){
-      h += '<label class="item item-row" for="mk-speak"><div><b>Read questions aloud</b><span class="hint">Turn on your sound.</span></div><span class="switch"><input type="checkbox" id="mk-speak"' + (mockPrefs.speak ? ' checked' : '') + '><span></span></span></label>';
+      h += '<label class="item item-row" for="mk-speak"><div><b>Read questions and answers aloud</b><span class="hint">Turn on your sound.</span></div><span class="switch"><input type="checkbox" id="mk-speak"' + (mockPrefs.speak ? ' checked' : '') + '><span></span></span></label>';
       h += '<label class="item item-row" for="mk-listen"><div><b>Hide the question text</b><span class="hint">Listen only, as in the interview.</span></div><span class="switch"><input type="checkbox" id="mk-listen"' + (mockPrefs.listen ? ' checked' : '') + '><span></span></span></label>';
     }
     h += '<div class="item"><span class="hint">Answer aloud, then show the answer and mark yourself correct or incorrect.</span><button class="btn primary big block" type="button" data-act="mock-start">Begin test</button></div></div>';
@@ -1982,12 +2070,13 @@ function mockClick(e){
   var a = t.dataset.act;
   if (a === 'mock-start') startMock();
   else if (a === 'mock-close'){ mock = null; hush(); renderMock(); window.scrollTo(0, 0); }
-  else if (a === 'mock-reveal'){ mock.revealed = true; mock.showText = true; mock.anim = 'reveal'; renderMock(); }
+  else if (a === 'mock-reveal'){ mock.revealed = true; mock.showText = true; mock.anim = 'reveal'; renderMock(); if (mockPrefs.speak) speak(answerSpeech(QN[mock.list[mock.i]])); }
   else if (a === 'mock-text'){ mock.showText = true; renderMock(); }
   else if (a === 'mock-right') markMock(true);
   else if (a === 'mock-wrong') markMock(false);
   else if (a === 'all'){ mock.showAll = true; renderMock(); }
   else if (a === 'speak'){ if (mock && !mock.done) speak(speakText(QN[mock.list[mock.i]])); }
+  else if (a === 'speak-answer'){ if (mock && !mock.done) speak(answerSpeech(QN[mock.list[mock.i]])); }
   else if (a === 'dyn-save' && mock) saveDyn(QN[mock.list[mock.i]], renderMock);
 }
 $('#mock-root').addEventListener('click', mockClick);
@@ -2115,6 +2204,8 @@ function syncForms(){
   var ra = $('#rep-auto'), rText = o ? o.repNote : ''; ra.hidden = !rText; ra.textContent = rText;
   $$('input[name="style"]').forEach(function(r){ r.checked = r.value === S.settings.style; });
   $('#set-voice').checked = !!S.settings.voice;
+  $$('input[name="voicekind"]').forEach(function(r){ r.checked = r.value === (S.settings.voiceKind || 'recorded'); });
+  $('#voicekind-row').hidden = !canClip;
   $('#set-haptics').checked = !!S.settings.haptics;
   $('#set-senior').checked = !!S.settings.senior;
   $('#voice-row').hidden = !canSpeak;
@@ -2134,6 +2225,8 @@ $('#my-state').addEventListener('change', function(){ S.my.state = this.value; S
 }); });
 $$('input[name="style"]').forEach(function(r){ r.addEventListener('change', function(){ S.settings.style = this.value; save(); }); });
 $('#set-voice').addEventListener('change', function(){ S.settings.voice = this.checked; save(); if (this.checked) speak('Questions will be read aloud.'); });
+$$('input[name="voicekind"]').forEach(function(r){ r.addEventListener('change', function(){ S.settings.voiceKind = this.value; save(); speak(speakText(QN[1])); }); });
+$('#voice-test').addEventListener('click', function(){ speak(speakText(QN[1])); });
 $('#set-haptics').addEventListener('change', function(){ S.settings.haptics = this.checked; save(); buzz(15); });
 $('#set-senior').addEventListener('change', function(){ S.settings.senior = this.checked; save(); });
 
@@ -2250,6 +2343,7 @@ syncForms();
 applyAppearance();
 route();
 booted = true;
+warmVoice();
 initPlatform();
 })();
 </script>
