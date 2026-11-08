@@ -18,6 +18,14 @@ It then opens from its own icon, full screen, and works without internet.
 Progress is saved on the phone. Use **Settings, Back up** to keep a copy or to move it to
 another device, and **Restore** to bring it back.
 
+## Voice
+
+Questions, answers, and the English practice sentences are read by recorded voices made with
+[Kokoro](https://github.com/hexgrad/kokoro), an open-weight text-to-speech model released under
+the Apache 2.0 license: a man ("Michael") and a woman ("Heart"). Each sentence is its own small
+MP3 in `audio/m/` and `audio/f/`, named by a hash of its text. Names you type yourself are read
+by the phone's own voice.
+
 ## About this repository
 
 The site is static files served by GitHub Pages from the `gh-pages` branch. `index.html`
